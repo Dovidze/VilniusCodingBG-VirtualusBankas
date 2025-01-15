@@ -25,7 +25,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         await Account.create(req.body);
-        res.json('Įrašas sėkmingai išsaugotas');
+        res.json('Sąskaita sėkmingai išsaugota');
     } catch (err){
         res.json(err)
         res.status(500).json('Įvyko serverio klaida');
@@ -36,7 +36,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         await Account.findByIdAndUpdate(req.params.id, req.body)
-        res.json("Vartotojas sėkmingai atnaujintas");
+        res.json("Sąskaita sėkmingai atnaujinta");
     } catch {
         res.status(500).json('Įvyko serverio klaida');
     }
@@ -46,7 +46,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         await Account.findByIdAndDelete(req.params.id)
-        res.json("Vartotojas sėkmingai ištrintas");
+        res.json("Sąskaita sėkmingai ištrinta");
     } catch {
         res.status(500).json('Įvyko serverio klaida');
     }
