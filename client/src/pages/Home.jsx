@@ -18,20 +18,37 @@ const Home = () => {
         }));
     }, [refresh]);
 
+    //Trinama sąskaita tik tada kai balanasas lygus 0
     const handleDelete = (id) => {
-        axios.delete('/api/account/' + id)
+      axios.get('/api/account/' + id)
         .then(resp => {
+          if(resp.data.accountsBalance > 0) {
             setAlert({
-                message: resp.data,
-                status: 'success'
-            })
-            
-            setRefresh(!refresh);
+              message: 'Sąskaita gali būti ištrinta, tik jei balansas yra lygus 0',
+              status: 'info'
+          });
+          }
+          else {
+            axios.delete('/api/account/' + id)
+            .then(resp => {
+                setAlert({
+                    message: resp.data,
+                    status: 'success'
+                })
+                
+                setRefresh(!refresh);
+            })    
+            .catch(err => setAlert({
+                message: err.response.data,
+                status: 'warning'
+            }));
+          }
         })    
         .catch(err => setAlert({
             message: err.response.data,
             status: 'warning'
         }));
+
     }
 
     return (
