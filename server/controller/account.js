@@ -36,7 +36,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         await Account.findByIdAndUpdate(req.params.id, req.body)
-        res.json("Sąskaita sėkmingai atnaujinta");
+        res.json("Sąskaitos balansas sėkmingai atnaujintas");
     } catch {
         res.status(500).json('Įvyko serverio klaida');
     }
