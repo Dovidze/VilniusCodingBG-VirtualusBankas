@@ -74,7 +74,7 @@ const Home = () => {
                                                 to={"/deduct-funds/" + value._id}
                                                 className="btn btn-warning"
                                             >
-                                              Nuskaituoti lėšas
+                                              Nuskaičiuoti lėšas
                                             </Link>
                                             <button 
                                                 className="btn btn-danger"
