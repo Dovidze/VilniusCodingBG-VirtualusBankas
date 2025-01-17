@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Vienas vartotojas
+//Vienas vartotojas
 // router.get('/:id', async (req, res) => {
 //     try {
 //         res.json(await User.findById(req.params.id));
@@ -22,8 +22,24 @@ router.get('/', async (req, res) => {
 //     }
 // });
 
+router.post('/login', async (req, res) => { 
+    if(!req.body.login || !req.body.password)
+        return res.status(500).json('Negauti prisijungimo duomenys');
+    const data = await User.findOne({ login: req.body.login, password: req.body.password });
+    
+    if(!data) 
+        return res.status(401).json('Neteisingi prisijungimo duomenys');
+    
+    req.session.user = {
+        login: data.login,
+    };
+
+    res.json(req.session.user);
+});
+
 router.get('/check-auth', auth, (req, res) => {
     res.json(req.session.user);
+  
 });
 
 router.get('/logout', auth, (req, res) => {
@@ -31,22 +47,6 @@ router.get('/logout', auth, (req, res) => {
     req.session.destroy();
 
     res.json("Sėkmingai atsijungėte");
-});
-
-router.post('/login', async (req, res) => {
-    if(!req.body.login || !req.body.password)
-        return res.status(500).json('Negauti prisijungimo duomenys');
-    const data = await User.findOne({ login: req.body.login, password: req.body.password });
-    
-    if(!data) 
-        return res.status(401).json('Neteisingi prisijungimo duomenys');
-    console.log(data)
-    
-    req.session.user = {
-        login: data.login,
-    };
-
-    res.json(req.session.user);
 });
 
 // Vartotojo sukurimas
