@@ -11,13 +11,27 @@ router.get('/', async (req, res) => {
         res.status(500).json('Įvyko serverio klaida');
     }
 });
+router.post('/check-personal-code', async (req, res) => {
+    try {
+        const { personalCode } = req.body;
+        const existingAccount = await Account.findOne({ personalCode });
+        if (existingAccount) {
+            return res.status(409).json({ message: 'Toks asmens kodas jau yra sistemoje' });
+        }
 
-// Viena sąskaita
+        return res.status(200).json({ message: 'Asmens kodas tinkamas' });
+    } catch (err) {
+        console.error('Error:', err);
+        return res.status(500).json({ message: 'Klaida tikrinant asmens kodą' });
+    }
+});
+
+//Viena sąskaita
 router.get('/:id', async (req, res) => {
     try {
         res.json(await Account.findById(req.params.id));
     } catch {
-        res.status(500).json('Įvyko serverio klaida');
+        res.status(500).json('Įvyko serverio klaidas');
     }
 });
 

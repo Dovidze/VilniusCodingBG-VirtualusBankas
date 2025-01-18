@@ -2,33 +2,66 @@ import axios from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { extractFormData } from '../helpers/util.js';
+import { validatePersonalCode } from '../helpers/validators.js';
 
 const CreateAccount = () => {
     const navigate = useNavigate();
-    const [alert, setAlert] = useState({});
+    const [alert, setAlertState] = useState({});
 
-    const handleSubmit = (e) => {
+    const setAlert = (alert) => {
+        setAlertState(alert);
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const data = extractFormData(e.target);
-        
-        axios.post('/api/account', data)
-        .then(resp => {
-            setAlert({
-                message: resp.data,
-                status: 'success'
-            });
+        const personalCodeInput = e.target.elements.personalCode.value;
+
+        if (!validatePersonalCode(personalCodeInput, setAlert)) {
+            return;
+        }
+
+        try {
+            const checkResponse = await axios.post('/api/account/check-personal-code', { personalCode: personalCodeInput });
             
-            // Peradresavimo kūrimas
-            setTimeout(() => {
-                navigate('/');
-            }, 1500);
-        })
-        .catch(err => setAlert({
-            message: err.response.data,
-            status: 'danger'
-        }));
-    }
+            if (checkResponse.status === 409) {
+                setAlert({
+                    message: checkResponse.data.message,
+                    status: 'danger',
+                });
+                return;
+            }
+        
+            // if (checkResponse.status === 200) {
+            //     console.log('Asmens kodas tinkamas');
+            // }
+        } catch (err) {
+            setAlert({
+                message: err.response?.data.message || 'Įvyko klaida tikrinant asmens kodą',
+                status: 'danger',
+            });
+            return;
+        }
+
+        axios.post('/api/account', data)
+            .then((resp) => {
+                setAlert({
+                    message: resp.data,
+                    status: 'success',
+                });
+
+                setTimeout(() => {
+                    navigate('/');
+                }, 1500);
+            })
+            .catch((err) => {
+                setAlert({
+                    message: err.response?.data || 'Įvyko klaida kuriant paskyrą.',
+                    status: 'danger',
+                });
+            });
+    };
 
     return (
         <>
