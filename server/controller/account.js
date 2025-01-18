@@ -1,7 +1,36 @@
 import { Router } from 'express';
 import Account from '../model/account.js';
+import multer from 'multer';
+import fs from 'fs';
 
 const router = Router();
+
+//Sukurti direktorija uploads automatiškai, jei jos nėra sukurtos
+const path = './uploads';
+if (!fs.existsSync(path)) {
+    fs.mkdirSync(path, { recursive: true });
+    console.log('Direktorija paso nuotraukoms sukurta automatiškai.');
+}
+
+//Failo vieta ir pavadinimas kai jis bus išsaugotas
+const storage = multer.diskStorage({
+    destination: function (req, file, next) {
+        next(null, './uploads');
+    },
+    filename: function (req, file, next) { 
+        next(null, Date.now() + '.jpg');
+    }
+});
+
+const upload = multer({ storage: storage });
+
+
+//Nuotraukos ikelimas naudojant multer
+router.post('/upload', upload.single('nuotrauka'), (req, res) => {
+    console.log(req.file);
+    console.log(req.body);
+    res.json('POST metodu duomenys gauti');
+});
 
 // Visos sąskaitos
 router.get('/', async (req, res) => {
@@ -11,6 +40,8 @@ router.get('/', async (req, res) => {
         res.status(500).json('Įvyko serverio klaida');
     }
 });
+
+//Tikrinamas asmens kodas
 router.post('/check-personal-code', async (req, res) => {
     try {
         const { personalCode } = req.body;
@@ -25,6 +56,7 @@ router.post('/check-personal-code', async (req, res) => {
         return res.status(500).json({ message: 'Klaida tikrinant asmens kodą' });
     }
 });
+
 
 //Viena sąskaita
 router.get('/:id', async (req, res) => {

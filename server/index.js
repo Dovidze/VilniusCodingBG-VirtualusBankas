@@ -29,6 +29,7 @@ app.set('trust proxy', 1)
 }));
 
 app.use(express.json());
+app.use('/nuotraukos', express.static('uploads'));
 
 app.use('/api/account', account);
 app.use('/api/user', user);
