@@ -2,13 +2,18 @@ import { Router } from 'express';
 import Account from '../model/account.js';
 import multer from 'multer';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 
 const router = Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 //Sukurti direktorija uploads automatiškai, jei jos nėra sukurtos
-const path = './uploads';
-if (!fs.existsSync(path)) {
-    fs.mkdirSync(path, { recursive: true });
+const uploadDir = './uploads';
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
     console.log('Direktorija paso nuotraukoms sukurta automatiškai.');
 }
 
@@ -26,7 +31,7 @@ const upload = multer({ storage: storage });
 
 
 //Nuotraukos ikelimas naudojant multer
-router.post('/upload', upload.single('nuotrauka'), (req, res) => {
+router.post('/upload', upload.single('passportPhoto'), (req, res) => {
     console.log(req.file);
     console.log(req.body);
     res.json('POST metodu duomenys gauti');
@@ -67,13 +72,21 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Sąskaitos sukūrimas
-router.post('/', async (req, res) => {
+//Naujos saskaitos sukurimas
+router.post('/', upload.single('passportPhoto'), async (req, res) => {
     try {
-        await Account.create(req.body);
-        res.json('Sąskaita sėkmingai išsaugota');
-    } catch (err){
-        res.json(err)
+        const failoKelias = req.file.path;
+
+        const newAccount = {
+            ...req.body,
+            passportPhoto: failoKelias,
+        };
+
+        await Account.create(newAccount);
+
+        res.json('Duomenys sėkmingai išsaugoti');
+    } catch (err) {
+        console.error(err);
         res.status(500).json('Įvyko serverio klaida');
     }
 });
@@ -91,9 +104,29 @@ router.put('/:id', async (req, res) => {
 // Sąskaitos ištrinimas
 router.delete('/:id', async (req, res) => {
     try {
-        await Account.findByIdAndDelete(req.params.id)
+        // Pirmiausia surandame sąskaitą pagal ID
+        const account = await Account.findById(req.params.id);
+
+        if (!account) {
+            return res.status(404).json('Sąskaita nerasta');
+        }
+
+        // Jei yra nuotrauka, pašaliname ją iš serverio - local vieta
+        if (account.passportPhoto) {
+            const filePath = path.resolve(__dirname, '..', account.passportPhoto);
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                    console.error('Nepavyko ištrinti failo:', err);
+                }
+            });
+        }
+
+        // Pašaliname sąskaitą iš duomenų bazės
+        await Account.findByIdAndDelete(req.params.id);
         res.json("Sąskaita sėkmingai ištrinta");
-    } catch {
+
+    } catch (err) {
+        console.error(err);
         res.status(500).json('Įvyko serverio klaida');
     }
 });

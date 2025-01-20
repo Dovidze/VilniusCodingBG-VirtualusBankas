@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { extractFormData } from '../helpers/util.js';
 import { validatePersonalCode } from '../helpers/validators.js';
 
 const CreateAccount = () => {
@@ -15,7 +14,7 @@ const CreateAccount = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const data = extractFormData(e.target);
+        const data = new FormData(e.target);
         const personalCodeInput = e.target.elements.personalCode.value;
 
         if (!validatePersonalCode(personalCodeInput, setAlert)) {
@@ -44,23 +43,28 @@ const CreateAccount = () => {
             return;
         }
 
-        axios.post('/api/account', data)
-            .then((resp) => {
-                setAlert({
-                    message: resp.data,
-                    status: 'success',
-                });
-
-                setTimeout(() => {
-                    navigate('/');
-                }, 1500);
-            })
-            .catch((err) => {
-                setAlert({
-                    message: err.response?.data || 'Įvyko klaida kuriant paskyrą.',
-                    status: 'danger',
-                });
+        
+        try {
+            const resp = await axios.post('/api/account', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
+
+            setAlert({
+                message: resp.data,
+                status: 'success',
+            });
+
+            setTimeout(() => {
+                navigate('/');
+            }, 1500);
+        } catch (err) {
+            setAlert({
+                message: err.response?.data || 'Įvyko klaida kuriant paskyrą.',
+                status: 'danger',
+            });
+        }
     };
 
     return (
@@ -73,7 +77,7 @@ const CreateAccount = () => {
                 </div>
             }
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} encType="multipart/form-data">
                 <div className="mb-3">
                     <label className='fw-bold'>Vardas</label>
                     <input 
@@ -104,7 +108,7 @@ const CreateAccount = () => {
                 <div className="mb-3">
                     <label className='fw-bold'>Paso nuotraukas</label>
                     <input 
-                        type="text" 
+                        type="file" 
                         className="form-control" 
                         name="passportPhoto"
                         required
