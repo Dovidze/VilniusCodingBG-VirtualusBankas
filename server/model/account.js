@@ -1,8 +1,8 @@
 import { Schema, model } from 'mongoose';
 
-// Generuojamas LT banko sąskaitos numeris
+// Generuojamas LT banko sąskaitos numeris (LT - šalis, 12 - kontrolinis numeris, 10101 - banko kodas, likę random, kiekvienam klientui skirtingi)
 const generateAccountNumber = () => {
-    const accountNumber = 'LT12' + Math.random().toString().slice(2, 18);
+    const accountNumber = 'LT1210101' + Math.random().toString().slice(2, 13);
     return accountNumber; 
 };
 

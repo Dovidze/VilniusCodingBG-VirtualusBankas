@@ -4,6 +4,8 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { auth } from '../middleware/auth.js';
+import account from '../model/account.js';
 
 
 const router = Router();
@@ -29,19 +31,21 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-
-//Nuotraukos ikelimas naudojant multer
-router.post('/upload', upload.single('passportPhoto'), (req, res) => {
-    console.log(req.file);
-    console.log(req.body);
-    res.json('POST metodu duomenys gauti');
-});
-
 // Visos sąskaitos
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
-        res.json(await Account.find());
-    } catch {
+        const sortData = {};
+
+        console.log(await account.find())
+
+        if(req.query.sort)
+            sortData.lastName = req.query.sort === 'asc' ? 'asc' : 'desc'; 
+
+        // Patikrinkite klaidas čia
+        const result = await account.find().sort(sortData);
+        res.json(result);
+    } catch (err) {
+        // console.error("Error: ", err); // Užfiksuokite klaidą į konsolę
         res.status(500).json('Įvyko serverio klaida');
     }
 });
@@ -73,7 +77,7 @@ router.get('/:id', async (req, res) => {
 });
 
 //Naujos saskaitos sukurimas
-router.post('/', upload.single('passportPhoto'), async (req, res) => {
+router.post('/', auth, upload.single('passportPhoto'), async (req, res) => {
     try {
         const failoKelias = req.file.path;
 
@@ -92,7 +96,7 @@ router.post('/', upload.single('passportPhoto'), async (req, res) => {
 });
 
 // Sąskaitos redagavimas
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     try {
         await Account.findByIdAndUpdate(req.params.id, req.body)
         res.json("Sąskaitos balansas sėkmingai atnaujintas");
@@ -102,7 +106,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Sąskaitos ištrinimas
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         // Pirmiausia surandame sąskaitą pagal ID
         const account = await Account.findById(req.params.id);

@@ -26,23 +26,25 @@ const App = () => {
 
     return ( 
         <BrowserRouter>
-            <Header user={user} setUser={setUser}/>
-            <div className="container">
-                <Routes>
-                    <Route path="/login" element={<Login setUser={setUser}/>} />
-                    {user && 
-                            <>
-                                <Route path="/" element={<Home />} />
-                                <Route path="/add-funds/:id" element={<AddFunds />} />
-                                <Route path="/deduct-funds/:id" element={<DeductFunds />} />
-                                <Route path="/create-account" element={<CreateAccount />} />
-                            </>   
-                        }
+        <Header user={user} setUser={setUser}/>
+        <div className="container">
+            <Routes>
+                <Route path="/login" element={<Login setUser={setUser}/>} />
+                {user  ? ( 
+                        <>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/add-funds/:id" element={<AddFunds />} />
+                            <Route path="/deduct-funds/:id" element={<DeductFunds />} />
+                            <Route path="/create-account" element={<CreateAccount />} />
+                        </>   
+                   ) : (
+                    <Route path="*" element={<Login setUser={setUser} />} />
+                )}
 
-                    <Route path="*" element={<h1>Toks puslapis nerastas</h1>} />
-                </Routes>
-            </div>
-        </BrowserRouter>
+                <Route path="*" element={<h1>Toks puslapis nerastas</h1>} />
+            </Routes>
+        </div>
+    </BrowserRouter>
     );
 }
 

@@ -6,9 +6,17 @@ const Home = () => {
     const [data, setData] = useState([]);
     const [alert, setAlert] = useState({});
     const [refresh, setRefresh] = useState(false);
+    const [sort, setSort] = useState();
 
     useEffect(() => {
-        axios.get('/api/account')
+
+        const params = {}
+
+        params.sort ='asc'
+        if(sort === 'asc' || sort === 'desc')
+            params.sort = sort;
+
+        axios.get('/api/account', { params })
         .then(resp => {
           setData(resp.data)
         })
@@ -16,7 +24,7 @@ const Home = () => {
             message: err.response.data,
             status: 'danger'
         }));
-    }, [refresh]);
+    }, [refresh, sort]);
 
     //Trinama sąskaita tik tada kai balanasas lygus 0
     const handleDelete = (id) => {
@@ -54,13 +62,26 @@ const Home = () => {
     return (
         <>
             <div className="container">
-                <h1>Sąskaitų sąrašas</h1>
+                <div>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h1>Sąskaitų sąrašas</h1>
+                        <div>
+                            <select
+                                className="form-select"
+                                onChange={(e) => setSort(e.target.value)}
+                            >
+                                <option value="asc">Pagal Pavardę A-Z</option>
+                                <option value="desc">Pagal Pavardę Z-A</option>
+                            </select>
+                        </div>
+                    </div>
 
                 {alert.message && 
                     <div className={"mt-4 alert alert-" + alert.status}>
                         {alert.message}
                     </div>
                 }
+                </div>
                 {alert.status !== 'danger' &&
                     <table className="table mt-4">
                         <thead>
