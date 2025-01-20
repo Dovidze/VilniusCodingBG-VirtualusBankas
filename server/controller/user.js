@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import User from '../model/user.js';
 import { auth } from '../middleware/auth.js';
+import bcrypt from 'bcrypt';
 
 const router = Router();
 
@@ -25,9 +26,13 @@ router.get('/', async (req, res) => {
 router.post('/login', async (req, res) => { 
     if(!req.body.login || !req.body.password)
         return res.status(500).json('Negauti prisijungimo duomenys');
-    const data = await User.findOne({ login: req.body.login, password: req.body.password });
+
+    const data = await User.findOne({ login: req.body.login });
     
     if(!data) 
+        return res.status(401).json('Neteisingi prisijungimo duomenys');
+
+    if(!await bcrypt.compare(req.body.password, data.password)) 
         return res.status(401).json('Neteisingi prisijungimo duomenys');
     
     req.session.user = {
@@ -52,10 +57,19 @@ router.get('/logout', auth, (req, res) => {
 // Vartotojo sukurimas
 router.post('/', async (req, res) => {
     try {
+        req.body.password = await bcrypt.hash(req.body.password, 10);
+
         await User.create(req.body);
-        res.json('Įrašas sėkmingai išsaugotas');
-    } catch {
-        res.status(501).json('Įvyko serverio klaida');
+
+        res.json('Vartotojas sėkmingai užregistruotas');
+    } catch (e) {
+        //Unikalumo tikrinimas
+        if (e.code === 11000 && e.keyValue && e.keyValue.login) {
+            res.status(409).json(`Vartotojas "${e.keyValue.login}" jau egzistuoja. Pasirinkite kitą.`);
+        } else {
+            //Kita klaida
+            res.status(500).json('Įvyko serverio klaida');
+        }
     }
 });
 
