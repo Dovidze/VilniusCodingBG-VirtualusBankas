@@ -2,9 +2,12 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const Header = ({ user, setUser }) => {
+
     const handleLogout = () => {
         axios.get('/api/user/logout')
-        .then(resp => setUser(false));
+        .then(resp => {
+            setUser(false);
+        });
     }
     return ( 
         <header className="text-bg-dark d-flex align-items-center py-3 mb-5">

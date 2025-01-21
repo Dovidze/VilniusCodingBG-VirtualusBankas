@@ -15,7 +15,6 @@ const Login = ({ setUser }) => {
 
         axios.post('/api/user/login', data)
         .then(resp => {
-            console.log(resp.data);
             setUser(resp.data);
             navigate('/'); 
         })

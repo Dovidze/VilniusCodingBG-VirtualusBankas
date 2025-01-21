@@ -36,8 +36,6 @@ router.get('/', auth, async (req, res) => {
     try {
         const sortData = {};
 
-        console.log(await account.find())
-
         if(req.query.sort)
             sortData.lastName = req.query.sort === 'asc' ? 'asc' : 'desc'; 
 
@@ -45,7 +43,7 @@ router.get('/', auth, async (req, res) => {
         const result = await account.find().sort(sortData);
         res.json(result);
     } catch (err) {
-        // console.error("Error: ", err); // Užfiksuokite klaidą į konsolę
+        console.error("Error: ", err); // Užfiksuokite klaidą į konsolę
         res.status(500).json('Įvyko serverio klaida');
     }
 });

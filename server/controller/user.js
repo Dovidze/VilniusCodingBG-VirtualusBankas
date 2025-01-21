@@ -48,10 +48,18 @@ router.get('/check-auth', auth, (req, res) => {
 });
 
 router.get('/logout', auth, (req, res) => {
-    // Sesijos duomenų ištrynimas
-    req.session.destroy();
+    if (!req.session) {
+        return res.status(400).json("Sesija nerasta");
+    }
 
-    res.json("Sėkmingai atsijungėte");
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Sesijos sunaikinimo klaida:', err);
+            return res.status(500).json('Nepavyko atsijungti');
+        }
+        console.log('Atsijungimas sėkmingas');
+        res.json("Sėkmingai atsijungėte");
+    });
 });
 
 // Vartotojo sukurimas
